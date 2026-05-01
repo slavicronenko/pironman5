@@ -17,9 +17,7 @@ class Pironman5Max:
         "clear_history",
         "delete_log_file",
         "pwm_fan_speed",
-        "gpio_fan_state",
-        "gpio_fan_mode",
-        "gpio_fan_led",
+        "pwm_gpio_fan",
         "vibration_switch",
         "oled_sleep",
     ]
@@ -37,9 +35,7 @@ class Pironman5Max:
         "oled_disk": "total",
         "oled_network_interface": "all",
         'gpio_fan_pin': 6,
-        'gpio_fan_mode': 0,
-        'gpio_fan_led': 'follow',
-        'gpio_fan_led_pin': 5,
+        'fan_cooling_level': 0.5,
         'oled_sleep_timeout': 10,
         'vibration_switch_pin': 26,
         'vibration_switch_pull_up': False,
@@ -47,4 +43,3 @@ class Pironman5Max:
     DT_OVERLAYS = [
         'sunfounder-pironman5.dtbo',
     ]
-

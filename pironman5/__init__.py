@@ -53,13 +53,8 @@ def main():
         parser.add_argument("-rl", "--rgb-led-count", nargs='?', default='', help="RGB LED count int")
     if is_included(PERIPHERALS, "temperature_unit"):
         parser.add_argument("-u", "--temperature-unit", choices=["C", "F"], nargs='?', default='', help="Temperature unit")
-    if is_included(PERIPHERALS, "gpio_fan_mode"):
-        from pm_auto.fan_control import GPIO_FAN_MODES
-        parser.add_argument("-gm", "--gpio-fan-mode", nargs='?', default='', help=f"GPIO fan mode, {', '.join([f'{i}: {mode}' for i, mode in enumerate(GPIO_FAN_MODES)])}")
-        parser.add_argument("-gp", "--gpio-fan-pin", nargs='?', default='', help="GPIO fan pin")
-    if is_included(PERIPHERALS, "gpio_fan_led"):
-        parser.add_argument("-fl", "--gpio-fan-led", nargs='?', default='', help="GPIO fan LED state on/off/follow")
-        parser.add_argument("-fp", "--gpio-fan-led-pin", nargs='?', default='', help="GPIO fan LED pin")
+    if is_included(PERIPHERALS, "pwm_gpio_fan"):
+        parser.add_argument("-cl", "--cooling-level", nargs='?', default='', help="Fan cooling level 0.0 (always off) to 1.0 (always on)")
     if is_included(PERIPHERALS, "oled"):
         parser.add_argument("-oe", "--oled-enable", nargs='?', default='', help="OLED enable True/true/on/On/1 or False/false/off/Off/0")
         parser.add_argument("-od", "--oled-disk", nargs='?', default='', help="Set to display which disk on OLED. 'total' or the name of the disk, like mmbclk or nvme")
@@ -257,58 +252,23 @@ def main():
                     quit()
                 new_sys_config['temperature_unit'] = args.temperature_unit
                 print(f"Set Temperature unit: {args.temperature_unit}")
-    # GPIO fan settings
+    # Cooling level settings
     # ----------------------------------------
-    if is_included(PERIPHERALS, "gpio_fan_mode"):
-        if args.gpio_fan_mode != '':
-            if args.gpio_fan_mode == None:
-                print(f"GPIO fan mode: {current_config['system']['gpio_fan_mode']}")
+    if is_included(PERIPHERALS, "pwm_gpio_fan"):
+        if args.cooling_level != '':
+            if args.cooling_level == None:
+                print(f"Cooling level: {current_config['system']['fan_cooling_level']}")
             else:
                 try:
-                    args.gpio_fan_mode = int(args.gpio_fan_mode)
+                    args.cooling_level = float(args.cooling_level)
                 except ValueError:
-                    print(f"Invalid value for GPIO fan mode, it should be an integer between 0 and {len(GPIO_FAN_MODES) - 1}, {', '.join([f'{i}: {mode}' for i, mode in enumerate(GPIO_FAN_MODES)])}")
+                    print(f"Invalid value for cooling level, it should be a float between 0.0 and 1.0")
                     quit()
-                if args.gpio_fan_mode < 0 or args.gpio_fan_mode >= len(GPIO_FAN_MODES):
-                    print(f"Invalid value for GPIO fan mode, it should be between 0 and {len(GPIO_FAN_MODES) - 1}, {', '.join([f'{i}: {mode}' for i, mode in enumerate(GPIO_FAN_MODES)])}")
+                if args.cooling_level < 0.0 or args.cooling_level > 1.0:
+                    print(f"Invalid value for cooling level, it should be between 0.0 and 1.0")
                     quit()
-                new_sys_config['gpio_fan_mode'] = args.gpio_fan_mode
-                print(f"Set GPIO fan mode: {args.gpio_fan_mode}")
-        if args.gpio_fan_pin != '':
-            if args.gpio_fan_pin == None:
-                print(f"GPIO fan pin: {current_config['system']['gpio_fan_pin']}")
-            else:
-                try:
-                    args.gpio_fan_pin = int(args.gpio_fan_pin)
-                except ValueError:
-                    print(f"Invalid value for GPIO fan pin, it should be an integer")
-                    quit()
-                new_sys_config['gpio_fan_pin'] = args.gpio_fan_pin
-                print(f"Set GPIO fan pin: {args.gpio_fan_pin}")
-    # GPIO fan LED settings
-    # ----------------------------------------
-    if is_included(PERIPHERALS, "gpio_fan_led"):
-        if args.gpio_fan_led != '':
-            if args.gpio_fan_led == None:
-                print(f"GPIO fan LED state: {current_config['system']['gpio_fan_led']}")
-            else:
-                state = args.gpio_fan_led.lower()
-                if state not in ['on', 'off', 'follow']:
-                    print(f"Invalid value for GPIO fan LED state, it should be on, off or follow")
-                    quit()
-                new_sys_config['gpio_fan_led'] = state
-                print(f"Set GPIO fan LED state: {args.gpio_fan_led}")
-        if args.gpio_fan_led_pin != '':
-            if args.gpio_fan_led_pin == None:
-                print(f"GPIO fan LED pin: {current_config['system']['gpio_fan_led_pin']}")
-            else:
-                try:
-                    args.gpio_fan_led_pin = int(args.gpio_fan_led_pin)
-                except ValueError:
-                    print(f"Invalid value for GPIO fan LED pin, it should be an integer")
-                    quit()
-                new_sys_config['gpio_fan_led_pin'] = args.gpio_fan_led_pin
-                print(f"Set GPIO fan LED pin: {args.gpio_fan_led_pin}")
+                new_sys_config['fan_cooling_level'] = args.cooling_level
+                print(f"Set cooling level: {args.cooling_level}")
     # OLED settings
     # ----------------------------------------
     if is_included(PERIPHERALS, "oled"):
